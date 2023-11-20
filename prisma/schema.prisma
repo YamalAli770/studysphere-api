@@ -1,0 +1,295 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  MENTOR
+  MENTEE
+}
+
+enum DocumentType {
+  DEGREE
+  TRANSCRIPT
+}
+
+enum MeetupRequestDuration {
+  FIFTEEN
+  THIRTY
+  SIXTY
+}
+
+enum MeetupRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum MeetingStatus {
+  PENDING
+  ONGOING
+  COMPLETED
+}
+
+enum OrderStatus {
+  PENDING
+  COMPLETED
+  DISPUTED
+  CANCELLED
+}
+
+enum DisputeStatus {
+  OPENED
+  RESOLVED
+}
+
+model User {
+  id String @id @default(uuid())
+  email String @unique
+  username String @unique
+  password String
+  role UserRole
+
+  firstName String?
+  lastName String?
+
+  universityName String?
+  universityCountry String?
+  educationLevel String?
+  major String?
+  graduationYear String?
+
+  refreshToken String?
+
+  // Relations
+  document UserDocumentDetails?
+  notification Notification[]
+  message Message[]
+  post Post[]
+  kudos Kudos[]
+  meetup Meetup[]
+  review Review[]
+  dispute Dispute[]
+
+  // Ambiguous
+  mentorConversation Conversation[] @relation(name: "MentorConversation")
+  menteeConversation Conversation[] @relation(name: "MenteeConversation")
+  mentorMeetupRequest MeetupRequest[] @relation(name: "MentorMeetupRequest")
+  menteeMeetupRequest MeetupRequest[] @relation(name: "MenteeMeetupRequest")
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+model UserDocumentDetails {
+  id String @id @default(uuid())
+  documentType DocumentType
+  documentUrl String
+
+  // Relations
+  userId String @unique
+  user User @relation(fields: [userId], references: [id])
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id String @id @default(uuid())
+  notificationText String
+  isRead Boolean @default(false)
+
+  // Relations
+  userId String
+  user User @relation(fields: [userId], references: [id])
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Conversation {
+  id String @id @default(uuid())
+
+  // Relations
+  mentorId String
+  mentor User @relation(name: "MentorConversation", fields: [mentorId], references: [id])
+
+  menteeId String
+  mentee User @relation(name:"MenteeConversation", fields: [menteeId], references: [id])
+
+  message Message[]
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Message {
+  id String @id @default(uuid())
+  messageText String
+
+  // Relations
+  userId String
+  user User @relation(fields: [userId], references: [id])
+
+  conversationId String
+  conversation Conversation @relation(fields: [conversationId], references: [id])
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Post {
+  id String @id @default(uuid())
+  postText String
+  
+  // Relations
+  userId String
+  user User @relation(fields: [userId], references: [id])
+
+  thought Thought[]
+  kudos Kudos[]
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Liked
+model Kudos {
+  id String @id @default(uuid())
+
+  // Relations
+  postId String
+  post Post @relation(fields: [postId], references: [id])
+
+  userId String
+  user User @relation(fields: [userId], references: [id])
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Comments
+model Thought {
+  id String @id @default(uuid())
+  parentThoughtId String?
+  thoughtText String
+
+  // Relations 
+  postId String
+  post Post @relation(fields: [postId], references: [id])
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Gig
+model Meetup {
+  id String @id @default(uuid())
+  title String
+  description String
+  pricePerMinute Int
+
+  // Relations
+  userId String
+  user User @relation(fields: [userId], references: [id])
+
+  meetupRequest MeetupRequest[]
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model MeetupRequest {
+  id String @id @default(uuid())
+  requestText String
+  requestedDuration MeetupRequestDuration
+  requestedTime DateTime
+  requestStatus MeetupRequestStatus @default(PENDING)
+
+  // Ambiguous Relations
+  mentorId String
+  mentor User @relation(name:"MentorMeetupRequest", fields: [mentorId], references: [id])
+
+  menteeId String
+  mentee User @relation(name:"MenteeMeetupRequest", fields: [menteeId], references: [id])
+
+  // Relations
+  meetupId String
+  meetup Meetup @relation(fields: [meetupId], references: [id])
+
+  order Order?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id String @id @default(uuid())
+  orderStatus OrderStatus
+  meetingStatus MeetingStatus @default(PENDING)
+  amountPaid Int
+
+  meetupRequestId String @unique
+  meetupRequest MeetupRequest? @relation(fields: [meetupRequestId], references: [id])
+
+  // Relations
+  review Review?
+  dispute Dispute?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Review {
+  id String @id @default(uuid())
+  reviewText String
+  rating Int 
+
+  // Relations
+  userId String
+  user User @relation(fields: [userId], references: [id])
+
+  orderId String @unique
+  order Order? @relation(fields: [orderId], references: [id])
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Dispute {
+  id String @id @default(uuid())
+  reason String
+  status DisputeStatus @default(OPENED)
+
+  // Relations
+  filedBy String
+  user User @relation(fields: [filedBy], references: [id])
+
+  orderId String @unique
+  order Order? @relation(fields: [orderId], references: [id])
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
