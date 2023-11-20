@@ -52,36 +52,36 @@ enum DisputeStatus {
 }
 
 model User {
-  id String @id @default(uuid())
-  email String @unique
-  username String @unique
+  id       String   @id @default(uuid())
+  email    String   @unique
+  username String   @unique
   password String
-  role UserRole
+  role     UserRole
 
   firstName String?
-  lastName String?
+  lastName  String?
 
-  universityName String?
+  universityName    String?
   universityCountry String?
-  educationLevel String?
-  major String?
-  graduationYear String?
+  educationLevel    String?
+  major             String?
+  graduationYear    String?
 
   refreshToken String?
 
   // Relations
-  document UserDocumentDetails?
+  document     UserDocumentDetails?
   notification Notification[]
-  message Message[]
-  post Post[]
-  kudos Kudos[]
-  meetup Meetup[]
-  review Review[]
-  dispute Dispute[]
+  message      Message[]
+  post         Post[]
+  kudos        Kudos[]
+  meetup       Meetup[]
+  review       Review[]
+  dispute      Dispute[]
 
   // Ambiguous
-  mentorConversation Conversation[] @relation(name: "MentorConversation")
-  menteeConversation Conversation[] @relation(name: "MenteeConversation")
+  mentorConversation  Conversation[]  @relation(name: "MentorConversation")
+  menteeConversation  Conversation[]  @relation(name: "MenteeConversation")
   mentorMeetupRequest MeetupRequest[] @relation(name: "MentorMeetupRequest")
   menteeMeetupRequest MeetupRequest[] @relation(name: "MenteeMeetupRequest")
 
@@ -90,15 +90,14 @@ model User {
   updatedAt DateTime @updatedAt
 }
 
-
 model UserDocumentDetails {
-  id String @id @default(uuid())
+  id           String       @id @default(uuid())
   documentType DocumentType
-  documentUrl String
+  documentUrl  String
 
   // Relations
   userId String @unique
-  user User @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
 
   // Timestamps
   createdAt DateTime @default(now())
@@ -106,13 +105,13 @@ model UserDocumentDetails {
 }
 
 model Notification {
-  id String @id @default(uuid())
+  id               String  @id @default(uuid())
   notificationText String
-  isRead Boolean @default(false)
+  isRead           Boolean @default(false)
 
   // Relations
   userId String
-  user User @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
 
   // Timestamps
   createdAt DateTime @default(now())
@@ -124,10 +123,10 @@ model Conversation {
 
   // Relations
   mentorId String
-  mentor User @relation(name: "MentorConversation", fields: [mentorId], references: [id])
+  mentor   User   @relation(name: "MentorConversation", fields: [mentorId], references: [id])
 
   menteeId String
-  mentee User @relation(name:"MenteeConversation", fields: [menteeId], references: [id])
+  mentee   User   @relation(name: "MenteeConversation", fields: [menteeId], references: [id])
 
   message Message[]
 
@@ -137,15 +136,15 @@ model Conversation {
 }
 
 model Message {
-  id String @id @default(uuid())
+  id          String @id @default(uuid())
   messageText String
 
   // Relations
   userId String
-  user User @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
 
   conversationId String
-  conversation Conversation @relation(fields: [conversationId], references: [id])
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
 
   // Timestamps
   createdAt DateTime @default(now())
@@ -153,15 +152,15 @@ model Message {
 }
 
 model Post {
-  id String @id @default(uuid())
+  id       String @id @default(uuid())
   postText String
-  
+
   // Relations
   userId String
-  user User @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
 
   thought Thought[]
-  kudos Kudos[]
+  kudos   Kudos[]
 
   // Timestamps
   createdAt DateTime @default(now())
@@ -174,10 +173,10 @@ model Kudos {
 
   // Relations
   postId String
-  post Post @relation(fields: [postId], references: [id])
+  post   Post   @relation(fields: [postId], references: [id])
 
   userId String
-  user User @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
 
   // Timestamps
   createdAt DateTime @default(now())
@@ -186,13 +185,13 @@ model Kudos {
 
 // Comments
 model Thought {
-  id String @id @default(uuid())
+  id              String  @id @default(uuid())
   parentThoughtId String?
-  thoughtText String
+  thoughtText     String
 
   // Relations 
   postId String
-  post Post @relation(fields: [postId], references: [id])
+  post   Post   @relation(fields: [postId], references: [id])
 
   // Timestamps
   createdAt DateTime @default(now())
@@ -201,14 +200,14 @@ model Thought {
 
 // Gig
 model Meetup {
-  id String @id @default(uuid())
-  title String
-  description String
+  id             String @id @default(uuid())
+  title          String
+  description    String
   pricePerMinute Int
 
   // Relations
   userId String
-  user User @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
 
   meetupRequest MeetupRequest[]
 
@@ -218,22 +217,22 @@ model Meetup {
 }
 
 model MeetupRequest {
-  id String @id @default(uuid())
-  requestText String
+  id                String                @id @default(uuid())
+  requestText       String
   requestedDuration MeetupRequestDuration
-  requestedTime DateTime
-  requestStatus MeetupRequestStatus @default(PENDING)
+  requestedTime     DateTime
+  requestStatus     MeetupRequestStatus   @default(PENDING)
 
   // Ambiguous Relations
   mentorId String
-  mentor User @relation(name:"MentorMeetupRequest", fields: [mentorId], references: [id])
+  mentor   User   @relation(name: "MentorMeetupRequest", fields: [mentorId], references: [id])
 
   menteeId String
-  mentee User @relation(name:"MenteeMeetupRequest", fields: [menteeId], references: [id])
+  mentee   User   @relation(name: "MenteeMeetupRequest", fields: [menteeId], references: [id])
 
   // Relations
   meetupId String
-  meetup Meetup @relation(fields: [meetupId], references: [id])
+  meetup   Meetup @relation(fields: [meetupId], references: [id])
 
   order Order?
 
@@ -243,16 +242,16 @@ model MeetupRequest {
 }
 
 model Order {
-  id String @id @default(uuid())
-  orderStatus OrderStatus
+  id            String        @id @default(uuid())
+  orderStatus   OrderStatus
   meetingStatus MeetingStatus @default(PENDING)
-  amountPaid Int
+  amountPaid    Int
 
-  meetupRequestId String @unique
-  meetupRequest MeetupRequest? @relation(fields: [meetupRequestId], references: [id])
+  meetupRequestId String         @unique
+  meetupRequest   MeetupRequest? @relation(fields: [meetupRequestId], references: [id])
 
   // Relations
-  review Review?
+  review  Review?
   dispute Dispute?
 
   // Timestamps
@@ -261,16 +260,16 @@ model Order {
 }
 
 model Review {
-  id String @id @default(uuid())
+  id         String @id @default(uuid())
   reviewText String
-  rating Int 
+  rating     Int
 
   // Relations
   userId String
-  user User @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
 
   orderId String @unique
-  order Order? @relation(fields: [orderId], references: [id])
+  order   Order? @relation(fields: [orderId], references: [id])
 
   // Timestamps
   createdAt DateTime @default(now())
@@ -278,16 +277,16 @@ model Review {
 }
 
 model Dispute {
-  id String @id @default(uuid())
+  id     String        @id @default(uuid())
   reason String
   status DisputeStatus @default(OPENED)
 
   // Relations
   filedBy String
-  user User @relation(fields: [filedBy], references: [id])
+  user    User   @relation(fields: [filedBy], references: [id])
 
   orderId String @unique
-  order Order? @relation(fields: [orderId], references: [id])
+  order   Order? @relation(fields: [orderId], references: [id])
 
   // Timestamps
   createdAt DateTime @default(now())
